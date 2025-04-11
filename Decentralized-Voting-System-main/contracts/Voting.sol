@@ -1,4 +1,5 @@
-pragma solidity ^0.5.15;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.3;
 
 contract Voting {
     struct Candidate {
@@ -8,8 +9,8 @@ contract Voting {
         uint voteCount;
     }
 
-    mapping (uint => Candidate) public candidates;
-    mapping (address => bool) public voters;
+    mapping(uint => Candidate) public candidates;
+    mapping(address => bool) public voters;
 
     uint public countCandidates;
     uint256 public votingEnd;
@@ -22,7 +23,7 @@ contract Voting {
     }
    
     function vote(uint candidateID) public {
-        require((votingStart <= now) && (votingEnd > now), "Voting is not currently active");
+        require((votingStart <= block.timestamp) && (votingEnd > block.timestamp), "Voting is not currently active");
         require(candidateID > 0 && candidateID <= countCandidates, "Invalid candidate ID");
         require(!voters[msg.sender], "You have already voted");
               
@@ -38,19 +39,29 @@ contract Voting {
         return countCandidates;
     }
 
-    function getCandidate(uint candidateID) public view returns (uint,string memory, string memory,uint) {
+    function getCandidate(uint candidateID) public view returns (uint, string memory, string memory, uint) {
         require(candidateID > 0 && candidateID <= countCandidates, "Invalid candidate ID");
-        return (candidateID,candidates[candidateID].name,candidates[candidateID].party,candidates[candidateID].voteCount);
+        return (
+            candidateID,
+            candidates[candidateID].name,
+            candidates[candidateID].party,
+            candidates[candidateID].voteCount
+        );
     }
 
     function setDates(uint256 _startDate, uint256 _endDate) public {
-        require((votingEnd == 0) && (votingStart == 0) && (_startDate + 1000000 > now) && (_endDate > _startDate), 
-                "Invalid voting dates or dates already set");
+        require(
+            (votingEnd == 0) && 
+            (votingStart == 0) && 
+            (_startDate + 1000000 > block.timestamp) && 
+            (_endDate > _startDate), 
+            "Invalid voting dates or dates already set"
+        );
         votingEnd = _endDate;
         votingStart = _startDate;
     }
 
-    function getDates() public view returns (uint256,uint256) {
-        return (votingStart,votingEnd);
+    function getDates() public view returns (uint256, uint256) {
+        return (votingStart, votingEnd);
     }
 }
